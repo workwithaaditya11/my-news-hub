@@ -11,7 +11,7 @@
       --border: #2a2a35; --text: #e8e8f0; --muted: #888898;
       --accent: #e63946; --accent2: #457b9d; --nepal: #ff6b35;
     }
-    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
     header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
     .logo { display: flex; align-items: center; gap: 10px; }
     .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
@@ -20,7 +20,7 @@
     .logo span { color: var(--accent); }
     .live-badge { background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
     .ticker { background: var(--accent); color: #fff; padding: 8px 0; overflow: hidden; white-space: nowrap; }
-    .ticker-inner { display: inline-block; animation: scroll 50s linear infinite; }
+    .ticker-inner { display: inline-block; animation: scroll 60s linear infinite; }
     @keyframes scroll { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
     .ticker-label { display: inline-block; background: #fff; color: var(--accent); font-weight: 700; font-size: 12px; padding: 0 10px; margin-right: 20px; border-radius: 3px; }
     .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
@@ -39,23 +39,26 @@
     .news-card.conflict { border-left: 3px solid var(--accent); }
     .card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
     .tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
-    .tag-geo { background: #1a2840; color: var(--accent2); }
+    .tag-world { background: #1a2840; color: var(--accent2); }
     .tag-pol { background: #2a1a2a; color: #c77dff; }
     .tag-conflict { background: #2a1a1a; color: var(--accent); }
     .tag-nepal { background: #2a1a0a; color: var(--nepal); }
+    .tag-business { background: #1a2a1a; color: #2dc653; }
     .card-time { font-size: 11px; color: var(--muted); margin-left: auto; }
     .card-source { font-size: 11px; color: var(--muted); }
     .card-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
     .card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .card-img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; float: right; margin-left: 12px; }
     .sidebar { display: flex; flex-direction: column; gap: 16px; }
     .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
     .sidebar-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
     .trend-item { padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; gap: 10px; }
     .trend-item:last-child { border-bottom: none; }
     .trend-num { color: var(--accent); font-weight: 700; font-size: 12px; min-width: 18px; }
-    .trend-text { color: var(--muted); }
+    .trend-text { color: var(--muted); line-height: 1.4; }
     .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
     @keyframes spin { to{transform:rotate(360deg)} }
+    .api-limit { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
     @media(max-width:900px){ .grid{grid-template-columns:1fr} .sidebar{display:none} }
   </style>
 </head>
@@ -66,125 +69,137 @@
     <h1>Global<span>News</span></h1>
     <span class="live-badge">LIVE</span>
   </div>
-  <span id="lastUpdated" style="font-size:12px;color:var(--muted)">Loading...</span>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="apiCount" class="api-limit">📊 Requests: loading...</span>
+    <span id="lastUpdated" style="font-size:12px;color:var(--muted)">Loading...</span>
+  </div>
 </header>
 <div class="ticker"><span class="ticker-inner" id="tickerText"><span class="ticker-label">BREAKING</span> Loading headlines...</span></div>
 <div class="container">
   <div class="filters">
-    <button class="filter-btn active" onclick="filterNews('all',event)">🌐 All</button>
-    <button class="filter-btn" onclick="filterNews('Geopolitics',event)">🗺️ Geopolitics</button>
-    <button class="filter-btn" onclick="filterNews('Politics',event)">🏛️ Politics</button>
-    <button class="filter-btn" onclick="filterNews('Conflict',event)">⚔️ Conflict</button>
-    <button class="filter-btn nepal-btn" onclick="filterNews('Nepal',event)">🇳🇵 Nepal</button>
+    <button class="filter-btn active" onclick="loadCategory('world',event)">🌐 World</button>
+    <button class="filter-btn" onclick="loadCategory('politics',event)">🏛️ Politics</button>
+    <button class="filter-btn" onclick="loadCategory('conflicts',event)">⚔️ Conflicts</button>
+    <button class="filter-btn" onclick="loadCategory('business',event)">📈 Business</button>
+    <button class="filter-btn nepal-btn" onclick="loadCategory('nepal',event)">🇳🇵 Nepal</button>
   </div>
   <div class="grid">
     <div>
       <div class="section-title">Latest News</div>
-      <div class="news-grid" id="newsContainer"><div style="text-align:center;padding:40px;color:var(--muted)"><div class="spinner"></div><p>Fetching news...</p></div></div>
+      <div class="news-grid" id="newsContainer">
+        <div style="text-align:center;padding:40px;color:var(--muted)"><div class="spinner"></div><p>Fetching news...</p></div>
+      </div>
     </div>
     <div class="sidebar">
-      <div class="sidebar-card"><div class="sidebar-title">🔥 Trending</div><div id="trendingList"></div></div>
-      <div class="sidebar-card"><div class="sidebar-title">📡 Sources</div><div style="font-size:13px;color:var(--muted);line-height:2.2">Reuters · BBC News<br>Al Jazeera · Guardian<br>OnlineKhabar · Setopati<br>Ratopati</div></div>
+      <div class="sidebar-card"><div class="sidebar-title">🔥 Trending Topics</div><div id="trendingList"></div></div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">📡 Powered By</div>
+        <div style="font-size:13px;color:var(--muted);line-height:2">GNews API<br>BBC · Reuters · Al Jazeera<br>Guardian · AP News<br>OnlineKhabar · Setopati</div>
+      </div>
     </div>
   </div>
 </div>
+
 <script>
-const FEEDS = [
-  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',       source: 'BBC News',     cat: 'Geopolitics' },
-  { url: 'https://www.aljazeera.com/xml/rss/all.xml',         source: 'Al Jazeera',   cat: 'Conflict'    },
-  { url: 'https://rss.theguardian.com/theguardian/world/rss', source: 'The Guardian', cat: 'Politics'    },
-  { url: 'https://www.onlinekhabar.com/feed',                  source: 'OnlineKhabar', cat: 'Nepal'       },
-  { url: 'https://www.setopati.com/feed',                      source: 'Setopati',     cat: 'Nepal'       },
-  { url: 'https://ratopati.com/feed',                          source: 'Ratopati',     cat: 'Nepal'       },
-];
+const API_KEY = '625f7c8e303ddabb679a1782cf7f05c7';
+const BASE = 'https://gnews.io/api/v4';
 
-const PROXIES = [
-  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-];
+let requestCount = 0;
+let allNews = [];
 
-let allNews = [], currentFilter = 'all';
-
-async function fetchWithProxy(url) {
-  for (const p of PROXIES) {
-    try {
-      const r = await fetch(p(url), { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) continue;
-      const d = await r.json();
-      const c = d.contents || d.body || '';
-      if (c.includes('<item>')) return c;
-    } catch {}
-  }
-  return null;
-}
-
-async function fetchFeed(feed) {
-  const raw = await fetchWithProxy(feed.url);
-  if (!raw) return [];
-  try {
-    const xml = new DOMParser().parseFromString(raw, 'text/xml');
-    return [...xml.querySelectorAll('item')].slice(0,12).map(i => ({
-      title:   i.querySelector('title')?.textContent?.trim() || '',
-      desc:    (i.querySelector('description')?.textContent||'').replace(/<[^>]+>/g,'').trim().slice(0,150),
-      link:    i.querySelector('link')?.textContent?.trim() || '#',
-      pubDate: i.querySelector('pubDate')?.textContent || '',
-      source:  feed.source, cat: feed.cat,
-    })).filter(n => n.title);
-  } catch { return []; }
-}
-
-const TAG = {
-  Geopolitics: '<span class="tag tag-geo">Geopolitics</span>',
-  Politics:    '<span class="tag tag-pol">Politics</span>',
-  Conflict:    '<span class="tag tag-conflict">Conflict</span>',
-  Nepal:       '<span class="tag tag-nepal">Nepal 🇳🇵</span>',
+const CATEGORIES = {
+  world:     { q: 'geopolitics OR international OR war OR diplomacy', label: 'World',    tag: 'tag-world',    cls: '' },
+  politics:  { q: 'politics OR election OR government OR policy',     label: 'Politics', tag: 'tag-pol',      cls: '' },
+  conflicts: { q: 'conflict OR war OR military OR attack OR crisis',  label: 'Conflict', tag: 'tag-conflict', cls: 'conflict' },
+  business:  { q: 'economy OR business OR trade OR market OR GDP',    label: 'Business', tag: 'tag-business', cls: '' },
+  nepal:     { q: 'Nepal',                                            label: 'Nepal 🇳🇵', tag: 'tag-nepal',    cls: 'nepal' },
 };
 
+let currentCat = 'world';
+const cache = {};
+
 function timeAgo(d) {
-  if (!d) return '';
-  const m = Math.floor((Date.now()-new Date(d))/60000);
-  if (m<1) return 'Just now';
-  if (m<60) return m+'m ago';
-  const h=Math.floor(m/60);
-  if (h<24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
+  const m = Math.floor((Date.now() - new Date(d)) / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m/60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h/24) + 'd ago';
 }
 
-function renderNews(news) {
+function renderNews(articles, cat) {
   const c = document.getElementById('newsContainer');
-  if (!news.length) { c.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">No news found.</div>'; return; }
-  c.innerHTML = news.map(n=>`
-    <a class="news-card ${n.cat==='Nepal'?'nepal':n.cat==='Conflict'?'conflict':''}" href="${n.link}" target="_blank" rel="noopener">
-      <div class="card-meta">${TAG[n.cat]||''}<span class="card-source">${n.source}</span><span class="card-time">${timeAgo(n.pubDate)}</span></div>
-      <div class="card-title">${n.title}</div>
-      ${n.desc?`<div class="card-desc">${n.desc}...</div>`:''}
+  const info = CATEGORIES[cat];
+  if (!articles.length) {
+    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No news found.</div>';
+    return;
+  }
+  c.innerHTML = articles.map(a => `
+    <a class="news-card ${info.cls}" href="${a.url}" target="_blank" rel="noopener">
+      ${a.image ? `<img class="card-img" src="${a.image}" alt="" onerror="this.style.display='none'">` : ''}
+      <div class="card-meta">
+        <span class="tag ${info.tag}">${info.label}</span>
+        <span class="card-source">${a.source?.name || ''}</span>
+        <span class="card-time">${timeAgo(a.publishedAt)}</span>
+      </div>
+      <div class="card-title">${a.title}</div>
+      ${a.description ? `<div class="card-desc">${a.description.slice(0,150)}...</div>` : ''}
     </a>`).join('');
+
+  // Trending
+  const words = {};
+  articles.forEach(a => a.title.split(' ').filter(w=>w.length>5).forEach(w=>{words[w]=(words[w]||0)+1;}));
+  const top = Object.entries(words).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById('trendingList').innerHTML = top.map((t,i)=>
+    `<div class="trend-item"><span class="trend-num">${i+1}</span><span class="trend-text">${t[0]}</span></div>`
+  ).join('');
+
+  // Ticker
+  document.getElementById('tickerText').innerHTML =
+    '<span class="ticker-label">BREAKING</span>' + articles.slice(0,8).map(a=>' ⬥ '+a.title).join('');
 }
 
-function filterNews(cat, e) {
-  currentFilter = cat;
+async function loadCategory(cat, e) {
+  currentCat = cat;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   if(e) e.target.classList.add('active');
-  renderNews(cat==='all'?allNews:allNews.filter(n=>n.cat===cat));
+
+  // Show loading
+  document.getElementById('newsContainer').innerHTML =
+    '<div style="text-align:center;padding:40px;color:var(--muted)"><div class="spinner"></div><p>Fetching news...</p></div>';
+
+  // Use cache if available (within 15 min)
+  if (cache[cat] && Date.now() - cache[cat].time < 15*60*1000) {
+    renderNews(cache[cat].data, cat);
+    return;
+  }
+
+  try {
+    const info = CATEGORIES[cat];
+    const url = `${BASE}/search?q=${encodeURIComponent(info.q)}&lang=en&max=10&sortby=publishedAt&apikey=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.errors) {
+      document.getElementById('newsContainer').innerHTML =
+        `<div style="text-align:center;padding:40px;color:var(--accent)">API Error: ${data.errors[0]}</div>`;
+      return;
+    }
+
+    requestCount++;
+    document.getElementById('apiCount').textContent = `📊 ${requestCount}/100 requests today`;
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+    cache[cat] = { data: data.articles || [], time: Date.now() };
+    renderNews(data.articles || [], cat);
+  } catch(err) {
+    document.getElementById('newsContainer').innerHTML =
+      '<div style="text-align:center;padding:40px;color:var(--accent)">Failed to load news. Try again.</div>';
+  }
 }
 
-async function init() {
-  document.getElementById('lastUpdated').textContent='Updating...';
-  const results = await Promise.allSettled(FEEDS.map(fetchFeed));
-  allNews = results.flatMap(r=>r.status==='fulfilled'?r.value:[]).sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-  renderNews(currentFilter==='all'?allNews:allNews.filter(n=>n.cat===currentFilter));
-  if (allNews.length) {
-    const words={};
-    allNews.forEach(n=>n.title.split(' ').filter(w=>w.length>5).forEach(w=>{words[w]=(words[w]||0)+1;}));
-    const top=Object.entries(words).sort((a,b)=>b[1]-a[1]).slice(0,7);
-    document.getElementById('trendingList').innerHTML=top.map((t,i)=>`<div class="trend-item"><span class="trend-num">${i+1}</span><span class="trend-text">${t[0]}</span></div>`).join('');
-    document.getElementById('tickerText').innerHTML='<span class="ticker-label">BREAKING</span>'+allNews.slice(0,8).map(n=>' ⬥ '+n.title).join('');
-  }
-  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-}
-init();
-setInterval(init,15*60*1000);
+// Load on start
+loadCategory('world', null);
 </script>
 </body>
 </html>
