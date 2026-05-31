@@ -10,9 +10,9 @@ import hashlib
 # ============================================================
 # CONFIG — GitHub Secrets बाट आउँछ (तपाईंले set गर्नुपर्छ)
 # ============================================================
-SENDER_EMAIL    = os.environ['workwithaaditya11@gmail.com']     # तपाईंको Gmail
-SENDER_PASSWORD = os.environ['sxnv paiv vqwf arlv']  # Gmail App Password
-RECEIVER_EMAIL  = os.environ['workwithaaditya11@gmail.com']   # जहाँ news पठाउने
+SENDER_EMAIL    = os.environ['SENDER_EMAIL']
+SENDER_PASSWORD = os.environ['SENDER_PASSWORD']
+RECEIVER_EMAIL  = os.environ['RECEIVER_EMAIL']
 
 # ============================================================
 # RSS FEEDS
